@@ -1072,7 +1072,12 @@ Rules:
       if (!res.ok || !Array.isArray(data.eventTypes) || data.eventTypes.length === 0) {
         return false;
       }
-      bookingState.eventTypeId = data.eventTypes[0].id;
+      const preferredEventType = data.eventTypes.find((eventType) =>
+        !eventType.hidden && eventType.slug === 'qatar-real-estate-automation'
+      ) || data.eventTypes.find((eventType) =>
+        !eventType.hidden && /ansury|audit|real estate/i.test(`${eventType.title || ''} ${eventType.slug || ''}`)
+      ) || data.eventTypes.find((eventType) => !eventType.hidden) || data.eventTypes[0];
+      bookingState.eventTypeId = preferredEventType.id;
       return true;
     } catch (_) {
       return false;

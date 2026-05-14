@@ -8,7 +8,7 @@ const crypto = require("crypto");
 const app = express();
 
 const PORT = Number(process.env.PORT || 3000);
-const DATA_DIR = path.join(__dirname, "data");
+const DATA_DIR = process.env.VERCEL ? path.join("/tmp", "ansury-ai-data") : path.join(__dirname, "data");
 const LEADS_FILE = path.join(DATA_DIR, "leads.json");
 
 const ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages";
@@ -32,11 +32,19 @@ const AIRTABLE_SYNC_EVENTS = new Set([
   "cta_book_clicked",
   "user_message",
   "agent_message",
+  "agent_error",
+  "booking_intent",
+  "booking_intent_detected",
   "prequal_completed",
+  "booking_name_captured",
+  "booking_email_captured",
   "booking_success",
+  "booking_confirmed",
   "booking_failed",
+  "booking_error",
   "booking_slots_unavailable",
   "callback_request_submitted",
+  "callback_form_sent_client",
   "chat_backend_error",
   "chat_network_error"
 ]);
@@ -46,11 +54,16 @@ const airtableTargetCache = {
   baseId: "",
   tableRef: "",
   primaryFieldName: "",
-  fieldNames: []
+  fieldNames: [],
+  tables: []
 };
 
 app.use(express.json({ limit: "1mb" }));
 app.use(express.static(__dirname));
+
+app.get("/", (_req, res) => {
+  res.sendFile(path.join(__dirname, "ansury-ai-1.html"));
+});
 
 function safeNowIso() {
   return new Date().toISOString();
@@ -257,7 +270,8 @@ async function resolveAirtableTarget() {
       baseId: airtableTargetCache.baseId,
       tableRef: airtableTargetCache.tableRef,
       primaryFieldName: airtableTargetCache.primaryFieldName,
-      fieldNames: airtableTargetCache.fieldNames
+      fieldNames: airtableTargetCache.fieldNames,
+      tables: airtableTargetCache.tables
     };
   }
 
@@ -319,11 +333,13 @@ async function resolveAirtableTarget() {
     airtableTargetCache.tableRef = table.id || table.name;
     airtableTargetCache.primaryFieldName = primaryField?.name || "";
     airtableTargetCache.fieldNames = fieldNames;
+    airtableTargetCache.tables = tablesData.tables;
     return {
       baseId: airtableTargetCache.baseId,
       tableRef: airtableTargetCache.tableRef,
       primaryFieldName: airtableTargetCache.primaryFieldName,
-      fieldNames: airtableTargetCache.fieldNames
+      fieldNames: airtableTargetCache.fieldNames,
+      tables: airtableTargetCache.tables
     };
   } catch (error) {
     console.warn("[Airtable] Auto-discovery failed:", error.message);
@@ -337,12 +353,189 @@ function trimForAirtable(value, limit = 100000) {
   return String(value).trim().slice(0, limit);
 }
 
+function airtableFormulaString(value) {
+  return String(value || "").replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+}
+
+function findField(table, candidates) {
+  const fields = Array.isArray(table?.fields) ? table.fields : [];
+  return candidates.find((candidate) => fields.some((field) => field.name === candidate)) || "";
+}
+
+function extractLeadIdentity(payload) {
+  const nested = payload.payload || {};
+  return {
+    name: trimForAirtable(payload.attendeeName || nested.name || nested.attendeeName || "", 160),
+    email: trimForAirtable(payload.attendeeEmail || nested.email || nested.attendeeEmail || "", 240),
+    phone: trimForAirtable(nested.phone || nested.whatsapp || nested.phoneNumber || "", 40),
+    message: trimForAirtable(payload.message || nested.text || nested.notes || nested.error || "", 12000),
+    slot: trimForAirtable(payload.slot || nested.slot || nested.preferredTime || "", 240)
+  };
+}
+
+function crmStatusForEvent(eventType) {
+  if (eventType === "booking_confirmed" || eventType === "booking_success") return "Booked";
+  if (eventType === "callback_request_submitted") return "Callback Requested";
+  if (eventType === "prequal_completed") return "Qualified";
+  if (eventType === "booking_intent" || eventType === "booking_intent_detected") return "Booking Requested";
+  if (eventType.includes("error") || eventType.includes("failed") || eventType.includes("unavailable")) return "Needs Manual Follow-up";
+  return "New";
+}
+
+function nextActionForEvent(eventType, identity) {
+  if (eventType === "booking_confirmed" || eventType === "booking_success") return "Calendar booking confirmed";
+  if (eventType === "callback_request_submitted") return `Call back ${identity.slot || "at requested time"}`;
+  if (eventType.includes("error") || eventType.includes("failed") || eventType.includes("unavailable")) return "Manual follow-up required";
+  if (eventType === "booking_intent" || eventType === "booking_intent_detected") return "Complete booking flow";
+  return "Review website chat";
+}
+
+async function airtableJson(url, options = {}) {
+  const response = await fetchWithRetry(
+    url,
+    {
+      ...options,
+      headers: {
+        Authorization: `Bearer ${AIRTABLE_PAT}`,
+        "Content-Type": "application/json",
+        ...(options.headers || {})
+      }
+    },
+    { retries: 1, retryDelayMs: 450 }
+  );
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(`${response.status} ${JSON.stringify(data).slice(0, 500)}`);
+  }
+  return data;
+}
+
+async function findAirtableRecord(baseId, tableRef, formula) {
+  const params = new URLSearchParams({
+    maxRecords: "1",
+    filterByFormula: formula
+  });
+  const data = await airtableJson(`${AIRTABLE_API_URL}/${baseId}/${encodeURIComponent(tableRef)}?${params.toString()}`, {
+    method: "GET"
+  });
+  return Array.isArray(data.records) ? data.records[0] : null;
+}
+
+async function createAirtableRecord(baseId, tableRef, fields) {
+  const data = await airtableJson(`${AIRTABLE_API_URL}/${baseId}/${encodeURIComponent(tableRef)}`, {
+    method: "POST",
+    body: JSON.stringify({
+      records: [{ fields }],
+      typecast: true
+    })
+  });
+  return data.records?.[0] || null;
+}
+
+async function updateAirtableRecord(baseId, tableRef, recordId, fields) {
+  const data = await airtableJson(`${AIRTABLE_API_URL}/${baseId}/${encodeURIComponent(tableRef)}`, {
+    method: "PATCH",
+    body: JSON.stringify({
+      records: [{ id: recordId, fields }],
+      typecast: true
+    })
+  });
+  return data.records?.[0] || null;
+}
+
+async function syncAirtableCrm(payload, target) {
+  const tables = Array.isArray(target.tables) ? target.tables : [];
+  const leadsTable = tables.find((table) => table.name === "Leads");
+  const dealsTable = tables.find((table) => table.name === "Deals/Interactions");
+  if (!leadsTable || !findField(leadsTable, ["Lead Name"])) return false;
+
+  const sessionId = trimForAirtable(payload.sessionId || crypto.randomUUID(), 120);
+  const identity = extractLeadIdentity(payload);
+  const leadName = `${identity.name || identity.email || "Website Lead"} - ${sessionId}`;
+  const leadNameField = findField(leadsTable, ["Lead Name"]);
+  const emailField = findField(leadsTable, ["Email"]);
+  const phoneField = findField(leadsTable, ["Phone Number", "Phone"]);
+  const sourceField = findField(leadsTable, ["Lead Source"]);
+  const languageField = findField(leadsTable, ["Language Preference"]);
+  const statusField = findField(leadsTable, ["AI Qualification Status"]);
+
+  let leadRecord = null;
+  if (identity.email && emailField) {
+    leadRecord = await findAirtableRecord(
+      target.baseId,
+      leadsTable.id || leadsTable.name,
+      `{${emailField}} = '${airtableFormulaString(identity.email)}'`
+    );
+  }
+  if (!leadRecord) {
+    leadRecord = await findAirtableRecord(
+      target.baseId,
+      leadsTable.id || leadsTable.name,
+      `FIND('${airtableFormulaString(sessionId)}', {${leadNameField}}) > 0`
+    );
+  }
+
+  const leadFields = {
+    [leadNameField]: leadName
+  };
+  if (identity.email && emailField) leadFields[emailField] = identity.email;
+  if (identity.phone && phoneField) leadFields[phoneField] = identity.phone;
+  if (sourceField) leadFields[sourceField] = "Website Chat";
+  if (languageField) leadFields[languageField] = "English";
+  if (statusField) leadFields[statusField] = crmStatusForEvent(payload.type || "");
+
+  leadRecord = leadRecord
+    ? await updateAirtableRecord(target.baseId, leadsTable.id || leadsTable.name, leadRecord.id, leadFields)
+    : await createAirtableRecord(target.baseId, leadsTable.id || leadsTable.name, leadFields);
+
+  if (!dealsTable || !leadRecord) return true;
+
+  const dealNameField = findField(dealsTable, ["Deal/Interaction Name"]);
+  if (!dealNameField) return true;
+
+  const leadLinkField = findField(dealsTable, ["Lead"]);
+  const nextActionField = findField(dealsTable, ["Next Action"]);
+  const viewingDateField = findField(dealsTable, ["Viewing Date"]);
+  const logField = findField(dealsTable, ["WhatsApp Conversation Log"]);
+  const dealName = `Website interaction - ${sessionId}`;
+  const dealRef = dealsTable.id || dealsTable.name;
+  let dealRecord = await findAirtableRecord(
+    target.baseId,
+    dealRef,
+    `FIND('${airtableFormulaString(sessionId)}', {${dealNameField}}) > 0`
+  );
+
+  const logLine = `[${payload.timestamp || safeNowIso()}] ${payload.type || "event"}${identity.message ? `: ${identity.message}` : ""}`;
+  const existingLog = trimForAirtable(dealRecord?.fields?.[logField] || "", 90000);
+  const dealFields = {
+    [dealNameField]: dealName
+  };
+  if (leadLinkField) dealFields[leadLinkField] = [leadRecord.id];
+  if (nextActionField) dealFields[nextActionField] = nextActionForEvent(payload.type || "", identity);
+  if (viewingDateField && identity.slot && !Number.isNaN(new Date(identity.slot).getTime())) {
+    dealFields[viewingDateField] = new Date(identity.slot).toISOString();
+  }
+  if (logField) {
+    dealFields[logField] = trimForAirtable(existingLog ? `${existingLog}\n${logLine}` : logLine, 90000);
+  }
+
+  if (dealRecord) {
+    await updateAirtableRecord(target.baseId, dealRef, dealRecord.id, dealFields);
+  } else {
+    await createAirtableRecord(target.baseId, dealRef, dealFields);
+  }
+
+  return true;
+}
+
 async function forwardToAirtable(payload) {
   if (!AIRTABLE_PAT) return;
 
   try {
     const target = await resolveAirtableTarget();
     if (!target) return;
+
+    if (await syncAirtableCrm(payload, target)) return;
 
     const fieldNames = new Set(Array.isArray(target.fieldNames) ? target.fieldNames : []);
     const eventType = trimForAirtable(payload.type || "event", 120);
@@ -379,21 +572,7 @@ async function forwardToAirtable(payload) {
       return;
     }
 
-    await fetchWithRetry(
-      `${AIRTABLE_API_URL}/${target.baseId}/${encodeURIComponent(target.tableRef)}`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${AIRTABLE_PAT}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          records: [{ fields }],
-          typecast: true
-        })
-      },
-      { retries: 1, retryDelayMs: 450 }
-    );
+    await createAirtableRecord(target.baseId, target.tableRef, fields);
   } catch (error) {
     console.error("[Airtable] write failed:", error.message);
   }
@@ -602,12 +781,14 @@ app.get("/api/cal/slots", async (req, res) => {
       return res.status(502).json({ error: "Could not fetch slots." });
     }
 
-    const slotMap = data?.data?.slots || {};
+    const slotMap = data?.data?.slots || data?.data || {};
     const slots = [];
     for (const times of Object.values(slotMap)) {
       if (!Array.isArray(times)) continue;
       for (const slot of times) {
-        if (slot?.time) slots.push(slot.time);
+        if (typeof slot === "string") slots.push(slot);
+        else if (slot?.start) slots.push(slot.start);
+        else if (slot?.time) slots.push(slot.time);
       }
     }
     return res.json({ slots: slots.slice(0, 8) });
