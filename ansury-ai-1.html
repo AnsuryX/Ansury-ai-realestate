@@ -1,0 +1,1153 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ansury AI - Always On. Always Converting.</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black: #0a0a0a;
+    --white: #f5f0e8;
+    --gold: #c9a84c;
+    --gold-light: #e8c97a;
+    --green: #25d366;
+    --green-dark: #128c7e;
+    --muted: #6b6560;
+    --card-bg: #111111;
+    --border: rgba(201,168,76,0.15);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.4;
+  }
+
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    padding: 24px 48px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(to bottom, rgba(10,10,10,0.95), transparent);
+  }
+
+  .logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    color: var(--gold);
+    text-transform: uppercase;
+  }
+
+  .logo span {
+    color: var(--white);
+    font-weight: 300;
+  }
+
+  .nav-cta {
+    background: transparent;
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    padding: 10px 24px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+  }
+
+  .nav-cta:hover {
+    background: var(--gold);
+    color: var(--black);
+  }
+
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 120px 48px 80px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-bg-circle {
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(201,168,76,0.06) 0%, transparent 70%);
+    top: 50%; right: -100px;
+    transform: translateY(-50%);
+    pointer-events: none;
+  }
+
+  .hero-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 32px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards 0.2s;
+  }
+
+  .hero-tag::before {
+    content: '';
+    width: 24px;
+    height: 1px;
+    background: var(--gold);
+  }
+
+  .hero h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(48px, 7vw, 96px);
+    font-weight: 300;
+    line-height: 1.05;
+    max-width: 900px;
+    margin-bottom: 32px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards 0.4s;
+  }
+
+  .hero h1 em {
+    font-style: italic;
+    color: var(--gold);
+  }
+
+  .hero-sub {
+    font-size: 17px;
+    color: var(--muted);
+    max-width: 520px;
+    line-height: 1.7;
+    margin-bottom: 48px;
+    font-weight: 300;
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards 0.6s;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards 0.8s;
+  }
+
+  .btn-primary {
+    background: var(--gold);
+    color: var(--black);
+    padding: 16px 36px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+  }
+
+  .btn-primary:hover {
+    background: var(--gold-light);
+    transform: translateY(-2px);
+  }
+
+  .btn-ghost {
+    color: var(--muted);
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: color 0.3s;
+    text-decoration: none;
+  }
+
+  .btn-ghost:hover { color: var(--white); }
+
+  .hero-stat-row {
+    display: flex;
+    gap: 48px;
+    margin-top: 80px;
+    padding-top: 48px;
+    border-top: 1px solid var(--border);
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards 1s;
+  }
+
+  .hero-stat h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 42px;
+    font-weight: 600;
+    color: var(--gold);
+    line-height: 1;
+  }
+
+  .hero-stat p {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 6px;
+    letter-spacing: 0.05em;
+  }
+
+  .pain-section {
+    padding: 100px 48px;
+    position: relative;
+  }
+
+  .section-label {
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .section-label::before {
+    content: '';
+    width: 32px;
+    height: 1px;
+    background: var(--gold);
+  }
+
+  .pain-section h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(32px, 4vw, 56px);
+    font-weight: 300;
+    max-width: 700px;
+    line-height: 1.15;
+    margin-bottom: 64px;
+  }
+
+  .pain-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+  }
+
+  .pain-card {
+    background: var(--card-bg);
+    padding: 40px 36px;
+    position: relative;
+    transition: background 0.3s ease;
+  }
+
+  .pain-card:hover { background: #161616; }
+
+  .pain-icon {
+    font-size: 14px;
+    margin-bottom: 20px;
+    display: inline-block;
+    color: var(--gold);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .pain-card h4 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    line-height: 1.2;
+  }
+
+  .pain-card p {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  .pain-card .pain-line {
+    position: absolute;
+    bottom: 0; left: 0;
+    height: 2px;
+    width: 0;
+    background: var(--gold);
+    transition: width 0.4s ease;
+  }
+
+  .pain-card:hover .pain-line { width: 100%; }
+
+  .demo-section {
+    padding: 100px 48px;
+    background: #080808;
+    position: relative;
+  }
+
+  .demo-section::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--gold), transparent);
+  }
+
+  .demo-inner {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: start;
+    max-width: 1100px;
+  }
+
+  .demo-copy h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(32px, 3.5vw, 52px);
+    font-weight: 300;
+    line-height: 1.1;
+    margin-bottom: 24px;
+    margin-top: 16px;
+  }
+
+  .demo-copy p {
+    font-size: 15px;
+    color: var(--muted);
+    line-height: 1.8;
+    margin-bottom: 32px;
+  }
+
+  .feature-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .feature-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    font-size: 14px;
+    color: var(--muted);
+  }
+
+  .feature-list li::before {
+    content: '->';
+    color: var(--gold);
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .phone-wrap {
+    display: flex;
+    justify-content: center;
+  }
+
+  .phone {
+    width: 320px;
+    background: #1a1a1a;
+    border-radius: 32px;
+    border: 1px solid #2a2a2a;
+    overflow: hidden;
+    box-shadow: 0 40px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.03);
+    position: relative;
+  }
+
+  .phone-top {
+    background: var(--green-dark);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .phone-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--black);
+    font-family: 'Cormorant Garamond', serif;
+  }
+
+  .phone-contact { flex: 1; }
+
+  .phone-contact strong {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    color: #fff;
+  }
+
+  .phone-contact span {
+    font-size: 11px;
+    color: rgba(255,255,255,0.7);
+  }
+
+  .chat-area {
+    background: #0d1117;
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.01'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    height: 420px;
+    overflow-y: auto;
+    padding: 16px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    scroll-behavior: smooth;
+  }
+
+  .chat-area::-webkit-scrollbar { width: 0; }
+
+  .msg {
+    max-width: 80%;
+    padding: 9px 13px;
+    border-radius: 8px;
+    font-size: 13px;
+    line-height: 1.5;
+    position: relative;
+    animation: msgIn 0.3s ease;
+    word-wrap: break-word;
+  }
+
+  .msg-time {
+    font-size: 10px;
+    color: rgba(255,255,255,0.4);
+    margin-top: 3px;
+    text-align: right;
+  }
+
+  .msg.incoming {
+    background: #1f2c34;
+    color: #e9edef;
+    align-self: flex-start;
+    border-bottom-left-radius: 2px;
+  }
+
+  .msg.outgoing {
+    background: #005c4b;
+    color: #e9edef;
+    align-self: flex-end;
+    border-bottom-right-radius: 2px;
+  }
+
+  .msg.agent {
+    background: #1a2a22;
+    color: #c8e6c9;
+    align-self: flex-start;
+    border-bottom-left-radius: 2px;
+    border-left: 2px solid var(--green);
+  }
+
+  .typing-indicator {
+    background: #1f2c34;
+    padding: 10px 14px;
+    border-radius: 8px;
+    align-self: flex-start;
+    display: none;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .typing-indicator.visible { display: flex; }
+
+  .typing-dot {
+    width: 6px;
+    height: 6px;
+    background: rgba(255,255,255,0.4);
+    border-radius: 50%;
+    animation: typingBounce 1.2s infinite;
+  }
+
+  .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+  .phone-input {
+    background: #1f2c34;
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-top: 1px solid #2a2a2a;
+  }
+
+  .phone-input input {
+    flex: 1;
+    background: #2a3942;
+    border: none;
+    border-radius: 20px;
+    padding: 8px 14px;
+    font-size: 13px;
+    color: #e9edef;
+    outline: none;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .phone-input input::placeholder { color: rgba(255,255,255,0.3); }
+
+  .send-btn {
+    width: 36px;
+    height: 36px;
+    background: var(--green);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+    flex-shrink: 0;
+  }
+
+  .send-btn:hover { background: #1da851; }
+
+  .send-btn svg {
+    width: 16px;
+    height: 16px;
+    fill: white;
+  }
+
+  .demo-start-btn {
+    background: transparent;
+    border: 1px solid var(--green);
+    color: var(--green);
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    width: 100%;
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.2s;
+    margin-bottom: 1px;
+  }
+
+  .demo-start-btn:hover { background: rgba(37,211,102,0.1); }
+
+  .cta-section {
+    padding: 120px 48px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cta-section::before {
+    content: '';
+    position: absolute;
+    width: 800px;
+    height: 800px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(201,168,76,0.05) 0%, transparent 70%);
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+
+  .cta-section::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--gold), transparent);
+  }
+
+  .cta-section h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(36px, 5vw, 68px);
+    font-weight: 300;
+    line-height: 1.1;
+    max-width: 800px;
+    margin: 0 auto 24px;
+  }
+
+  .cta-section p {
+    font-size: 16px;
+    color: var(--muted);
+    max-width: 480px;
+    margin: 0 auto 48px;
+    line-height: 1.7;
+  }
+
+  .cta-proof {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    margin-top: 48px;
+    padding-top: 48px;
+    border-top: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+
+  .proof-item {
+    font-size: 13px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .proof-item::before {
+    content: '*';
+    color: var(--gold);
+    font-size: 10px;
+  }
+
+  footer {
+    padding: 32px 48px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  footer p {
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes msgIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes typingBounce {
+    0%, 60%, 100% { transform: translateY(0); }
+    30% { transform: translateY(-4px); }
+  }
+
+  @media (max-width: 768px) {
+    nav { padding: 20px 24px; }
+    .hero { padding: 100px 24px 60px; }
+    .pain-section, .demo-section, .cta-section { padding: 72px 24px; }
+    .demo-inner { grid-template-columns: 1fr; gap: 48px; }
+    .hero-stat-row { gap: 32px; flex-wrap: wrap; }
+    footer { flex-direction: column; gap: 12px; text-align: center; }
+  }
+</style>
+</head>
+<body>
+<nav>
+  <div class="logo">Ansury <span>AI</span></div>
+  <a href="#demo" class="nav-cta js-book-cta" data-cta-source="nav">Book a Call</a>
+</nav>
+
+<section class="hero">
+  <div class="hero-bg-circle"></div>
+  <div class="hero-tag">WhatsApp AI Agents - Qatar Real Estate</div>
+  <h1>Your leads go cold<br>in under <em>5 minutes.</em><br>Yours will not.</h1>
+  <p class="hero-sub">Ansury AI builds always-on WhatsApp agents for Qatar real estate teams, qualifying leads, answering inquiries, and booking viewings while your team sleeps.</p>
+  <div class="hero-actions">
+    <a href="#demo" class="btn-primary">See It In Action</a>
+    <a href="#demo" class="btn-ghost js-book-cta" data-cta-source="hero-secondary">Book a Discovery Call -&gt;</a>
+  </div>
+  <div class="hero-stat-row">
+    <div class="hero-stat">
+      <h3>5 min</h3>
+      <p>Average lead response window before interest drops</p>
+    </div>
+    <div class="hero-stat">
+      <h3>24/7</h3>
+      <p>Coverage across all WhatsApp inquiries with zero downtime</p>
+    </div>
+    <div class="hero-stat">
+      <h3>3x</h3>
+      <p>More qualified leads passed to your sales team daily</p>
+    </div>
+  </div>
+</section>
+
+<section class="pain-section">
+  <div class="section-label">The Problem</div>
+  <h2>Four ways Qatar real estate firms lose deals every day</h2>
+  <div class="pain-grid">
+    <div class="pain-card">
+      <span class="pain-icon">Issue 01</span>
+      <h4>Leads Go Cold Instantly</h4>
+      <p>A buyer messages at 11pm about a Pearl apartment. No reply until 9am, and they have already spoken to competitors.</p>
+      <div class="pain-line"></div>
+    </div>
+    <div class="pain-card">
+      <span class="pain-icon">Issue 02</span>
+      <h4>Agents Repeat Basic Answers</h4>
+      <p>Your top agents lose hours answering the same listing questions instead of closing serious buyers.</p>
+      <div class="pain-line"></div>
+    </div>
+    <div class="pain-card">
+      <span class="pain-icon">Issue 03</span>
+      <h4>No Coverage After Hours</h4>
+      <p>Expat buyers message across time zones. If your team is offline, demand moves to someone else.</p>
+      <div class="pain-line"></div>
+    </div>
+    <div class="pain-card">
+      <span class="pain-icon">Issue 04</span>
+      <h4>Unqualified Leads Waste Time</h4>
+      <p>Hours disappear on prospects with no budget or urgency, while qualified buyers wait for attention.</p>
+      <div class="pain-line"></div>
+    </div>
+  </div>
+</section>
+
+<section class="demo-section" id="demo">
+  <div class="demo-inner">
+    <div class="demo-copy">
+      <div class="section-label">Live Demo</div>
+      <h2>Watch your agent handle a real inquiry</h2>
+      <p>This mirrors your buyer experience: instant, intelligent, and always available. Start the chat to test your AI assistant.</p>
+      <ul class="feature-list">
+        <li>Responds in under 2 seconds, all day</li>
+        <li>Qualifies budget, timeline, and preferences automatically</li>
+        <li>Books appointments directly in your calendar</li>
+        <li>Escalates hot leads to humans in real time</li>
+        <li>Custom brand voice and listing context</li>
+      </ul>
+    </div>
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="phone-top">
+          <div class="phone-avatar">A</div>
+          <div class="phone-contact">
+            <strong>Ansury Property Assistant</strong>
+            <span id="agent-status">Online</span>
+          </div>
+        </div>
+        <div class="chat-area" id="chatArea"></div>
+        <div class="typing-indicator" id="typingIndicator">
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+        </div>
+        <button class="demo-start-btn" id="startDemoBtn" onclick="startDemo()">Start Demo Conversation</button>
+        <div class="phone-input" id="phoneInput" style="display:none;">
+          <input type="text" id="userInput" placeholder="Type a message..." onkeydown="if(event.key==='Enter') sendMessage()" maxlength="200"/>
+          <button class="send-btn" onclick="sendMessage()" aria-label="Send message">
+            <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="cta-section">
+  <div class="section-label" style="justify-content:center;">Get Started</div>
+  <h2>Ready to never miss a lead again?</h2>
+  <p>Book a 30-minute discovery call. We will map the exact flow for your portfolio and team.</p>
+  <a href="#demo" class="btn-primary js-book-cta" data-cta-source="footer-cta">Book Your Discovery Call</a>
+  <p style="margin-top:12px; font-size:13px; color:var(--muted);">Average setup kickoff in 48 hours.</p>
+  <div class="cta-proof">
+    <div class="proof-item">Built for Qatar real estate</div>
+    <div class="proof-item">Arabic and English support</div>
+    <div class="proof-item">Live in under 7 days</div>
+    <div class="proof-item">No technical setup required</div>
+  </div>
+</section>
+
+<footer>
+  <div class="logo" style="font-size:16px;">Ansury <span>AI</span></div>
+  <p>&copy; 2026 Ansury AI - Doha, Qatar - Always On. Always Converting.</p>
+</footer>
+
+<script>
+  const API_BASE = window.location.origin;
+  const SYSTEM_PROMPT = `You are Layla, a WhatsApp AI agent for Nakheel Properties Qatar, a premium real estate firm in Doha.
+
+Your job is to assist potential property buyers, qualify leads, and book discovery calls.
+
+Properties available:
+- Studios from QAR 4,500/month (Al Waab, Lusail)
+- 1BR from QAR 6,500/month (West Bay, Lusail)
+- 2BR from QAR 9,000/month (The Pearl, Lusail, West Bay)
+- Villas from QAR 18,000/month (The Pearl, Al Waab)
+
+Rules:
+- Keep messages short (2 to 4 sentences), WhatsApp style.
+- Be warm and professional.
+- Gently qualify budget, preferred area, and timeline.
+- When lead is clearly interested or asks to book, end message with [BOOKING_INTENT].
+- Use [BOOKING_INTENT] only once.
+- Never mention the tag to the user.
+- After booking succeeds, celebrate and tell them to check email.`;
+
+  let sessionId = localStorage.getItem('ansurySessionId') || `session-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  localStorage.setItem('ansurySessionId', sessionId);
+
+  let conversationHistory = [];
+  let demoStarted = false;
+
+  let bookingState = {
+    active: false,
+    step: null,
+    name: null,
+    email: null,
+    datetime: null,
+    eventTypeId: null,
+    slots: []
+  };
+
+  function escapeHtml(input) {
+    return String(input)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  function formatMessage(text) {
+    return escapeHtml(text).replace(/\n/g, '<br>');
+  }
+
+  function delay(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  function getTime() {
+    return new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+  }
+
+  function addMessage(text, type) {
+    const chatArea = document.getElementById('chatArea');
+    const msg = document.createElement('div');
+    msg.className = `msg ${type}`;
+    msg.innerHTML = `${formatMessage(text)}<div class="msg-time">${getTime()}${type === 'agent' ? ' delivered' : ''}</div>`;
+    chatArea.appendChild(msg);
+    chatArea.scrollTop = chatArea.scrollHeight;
+  }
+
+  function showTyping(show) {
+    const indicator = document.getElementById('typingIndicator');
+    indicator.className = show ? 'typing-indicator visible' : 'typing-indicator';
+    if (show) {
+      const chatArea = document.getElementById('chatArea');
+      chatArea.scrollTop = chatArea.scrollHeight;
+    }
+  }
+
+  async function postLeadEvent(type, payload) {
+    try {
+      await fetch(`${API_BASE}/api/lead-event`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId, type, payload })
+      });
+    } catch (_) {
+      // Fail silently; chat should continue.
+    }
+  }
+
+  async function fetchEventTypes() {
+    try {
+      const res = await fetch(`${API_BASE}/api/cal/event-types`);
+      const data = await res.json();
+      if (!res.ok || !Array.isArray(data.eventTypes) || data.eventTypes.length === 0) {
+        return false;
+      }
+      bookingState.eventTypeId = data.eventTypes[0].id;
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  async function getAvailableSlots(eventTypeId) {
+    try {
+      const res = await fetch(`${API_BASE}/api/cal/slots?eventTypeId=${encodeURIComponent(eventTypeId)}`);
+      const data = await res.json();
+      if (!res.ok || !Array.isArray(data.slots)) return [];
+      return data.slots.slice(0, 6);
+    } catch (_) {
+      return [];
+    }
+  }
+
+  async function createBooking(eventTypeId, startTime, name, email) {
+    try {
+      const res = await fetch(`${API_BASE}/api/cal/bookings`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId, eventTypeId, startTime, name, email })
+      });
+      const data = await res.json();
+      if (!res.ok) return { ok: false, error: data.error || 'Booking failed.', fallback: data.fallback };
+      return { ok: true, booking: data.booking };
+    } catch (_) {
+      return { ok: false, error: 'Booking request failed.' };
+    }
+  }
+
+  function formatSlotOptions(slots) {
+    return slots.map((iso, index) => {
+      const d = new Date(iso);
+      const label = d.toLocaleDateString('en-QA', { weekday: 'short', month: 'short', day: 'numeric' }) +
+        ' at ' +
+        d.toLocaleTimeString('en-QA', { hour: '2-digit', minute: '2-digit', hour12: true });
+      return `${index + 1}. ${label}`;
+    }).join('\n');
+  }
+
+  async function handleBookingFlow(userText) {
+    const step = bookingState.step;
+
+    if (step === 'name') {
+      bookingState.name = userText.trim();
+      bookingState.step = 'email';
+      await postLeadEvent('booking_name_captured', { name: bookingState.name });
+      addMessage(`Nice to meet you, ${bookingState.name}. What is the best email for confirmation?`, 'agent');
+      return;
+    }
+
+    if (step === 'email') {
+      const email = userText.trim();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        addMessage('That email format looks off. Please send a valid email address.', 'agent');
+        return;
+      }
+
+      bookingState.email = email;
+      bookingState.step = 'datetime';
+      await postLeadEvent('booking_email_captured', { email });
+
+      addMessage('Perfect, checking available slots now...', 'agent');
+      const slots = await getAvailableSlots(bookingState.eventTypeId);
+
+      if (slots.length === 0) {
+        bookingState.active = false;
+        addMessage('I cannot load calendar slots right now. A human advisor will contact you shortly.', 'agent');
+        await postLeadEvent('booking_slots_unavailable', {});
+        return;
+      }
+
+      bookingState.slots = slots;
+      addMessage(`Here are the next available slots (Qatar time):\n\n${formatSlotOptions(slots)}\n\nReply with the slot number.`, 'agent');
+      return;
+    }
+
+    if (step === 'datetime') {
+      const choice = Number.parseInt(userText.trim(), 10) - 1;
+      if (!Number.isInteger(choice) || choice < 0 || choice >= bookingState.slots.length) {
+        addMessage(`Please reply with a number between 1 and ${bookingState.slots.length}.`, 'agent');
+        return;
+      }
+
+      bookingState.datetime = bookingState.slots[choice];
+      bookingState.step = 'confirming';
+
+      const d = new Date(bookingState.datetime);
+      const slotLabel = d.toLocaleDateString('en-QA', { weekday: 'long', month: 'long', day: 'numeric' }) +
+        ' at ' +
+        d.toLocaleTimeString('en-QA', { hour: '2-digit', minute: '2-digit', hour12: true });
+
+      addMessage(`Booking your call for ${slotLabel}. One moment...`, 'agent');
+      const result = await createBooking(bookingState.eventTypeId, bookingState.datetime, bookingState.name, bookingState.email);
+
+      if (result.ok) {
+        bookingState.active = false;
+        bookingState.step = 'done';
+        addMessage(`You are booked, ${bookingState.name}. Confirmation has been sent to ${bookingState.email}. See you on ${slotLabel}.`, 'agent');
+        await postLeadEvent('booking_success', {
+          slot: bookingState.datetime,
+          name: bookingState.name,
+          email: bookingState.email,
+          bookingUid: result.booking?.uid || null
+        });
+
+        conversationHistory.push({
+          role: 'assistant',
+          content: `Booking confirmed for ${bookingState.name} at ${slotLabel}.`
+        });
+      } else {
+        bookingState.active = false;
+        const fallback = result.fallback || {};
+        const handoffLine = fallback.whatsapp || fallback.email
+          ? `Please contact us directly: ${fallback.whatsapp || ''} ${fallback.email || ''}`.trim()
+          : 'Please contact our team directly for manual booking.';
+        addMessage(`Booking service is temporarily unavailable. ${handoffLine}`, 'agent');
+        await postLeadEvent('booking_failed', { error: result.error || 'unknown' });
+      }
+    }
+  }
+
+  async function getAgentReply(userMessage) {
+    if (bookingState.active) {
+      await handleBookingFlow(userMessage);
+      return;
+    }
+
+    conversationHistory.push({ role: 'user', content: userMessage });
+    showTyping(true);
+
+    try {
+      const response = await fetch(`${API_BASE}/api/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sessionId,
+          systemPrompt: SYSTEM_PROMPT,
+          userMessage,
+          conversationHistory
+        })
+      });
+
+      const data = await response.json();
+      showTyping(false);
+
+      if (!response.ok || !data.reply) {
+        const fallback = data.fallback || {};
+        const handoff = fallback.whatsapp || fallback.email
+          ? ` Please contact ${fallback.whatsapp || ''} ${fallback.email || ''}`
+          : '';
+        addMessage(`Sorry, I cannot respond right now.${handoff}`, 'agent');
+        await postLeadEvent('chat_backend_error', { status: response.status, error: data.error || 'unknown' });
+        return;
+      }
+
+      if (data.sessionId && data.sessionId !== sessionId) {
+        sessionId = data.sessionId;
+        localStorage.setItem('ansurySessionId', sessionId);
+      }
+
+      conversationHistory.push({ role: 'assistant', content: data.reply });
+      addMessage(data.reply, 'agent');
+
+      if (data.hasBookingIntent && !bookingState.active) {
+        if (!bookingState.eventTypeId) {
+          await fetchEventTypes();
+        }
+        if (bookingState.eventTypeId) {
+          bookingState.active = true;
+          bookingState.step = 'name';
+          await postLeadEvent('booking_intent_detected', {});
+          await delay(700);
+          addMessage('Great, I can help you book that now. What is your full name?', 'agent');
+        } else {
+          addMessage('I can book this for you, but calendar sync is unavailable right now. Please share your details and our team will call you directly.', 'agent');
+        }
+      }
+    } catch (_) {
+      showTyping(false);
+      addMessage('Connection issue detected. Please try again in a moment.', 'agent');
+      await postLeadEvent('chat_network_error', {});
+    }
+  }
+
+  function focusChatInput() {
+    const input = document.getElementById('userInput');
+    if (input) input.focus();
+  }
+
+  function openChatUi() {
+    document.getElementById('startDemoBtn').style.display = 'none';
+    document.getElementById('phoneInput').style.display = 'flex';
+    focusChatInput();
+  }
+
+  async function startBookingFromCTA(source) {
+    document.getElementById('demo').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    openChatUi();
+    await postLeadEvent('cta_book_clicked', { source });
+
+    if (!bookingState.eventTypeId) {
+      await fetchEventTypes();
+    }
+
+    if (!bookingState.eventTypeId) {
+      addMessage('Calendar is syncing. Please share your name and number, and our team will confirm your call manually.', 'agent');
+      return;
+    }
+
+    if (!bookingState.active) {
+      bookingState.active = true;
+      bookingState.step = 'name';
+      addMessage('Perfect, let us lock your discovery call now. What is your full name?', 'agent');
+    } else {
+      addMessage('You are already in booking flow. Please continue with your details here.', 'agent');
+    }
+  }
+
+  function wireCtas() {
+    document.querySelectorAll('.js-book-cta').forEach((cta) => {
+      cta.addEventListener('click', async (event) => {
+        event.preventDefault();
+        const source = cta.getAttribute('data-cta-source') || 'unknown';
+        await startBookingFromCTA(source);
+      });
+    });
+  }
+
+  async function startDemo() {
+    if (demoStarted) return;
+
+    demoStarted = true;
+    openChatUi();
+
+    await postLeadEvent('demo_started', {});
+    await fetchEventTypes();
+
+    await delay(500);
+    const firstUserLine = 'Hi, I saw your 2-bedroom listing in Lusail. Is it still available?';
+    addMessage(firstUserLine, 'incoming');
+    await delay(1000);
+    await getAgentReply(firstUserLine);
+  }
+
+  async function sendMessage() {
+    const input = document.getElementById('userInput');
+    const text = input.value.trim();
+    if (!text) return;
+
+    input.value = '';
+    addMessage(text, 'outgoing');
+    await getAgentReply(text);
+  }
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        entry.target.style.opacity = '1';
+        entry.target.style.transform = 'translateY(0)';
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.pain-card, .demo-inner, .cta-section h2').forEach((el) => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(20px)';
+    el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+    observer.observe(el);
+  });
+
+  wireCtas();
+</script>
+</body>
+</html>
