@@ -10,8 +10,15 @@ This project now runs with a backend API so keys are never exposed in the browse
 - Persistent lead capture in `data/leads.json`
 - Airtable CRM sync for lead/booking events
 - Retry + error handling + fallback contact responses
+- Callback-request fallback API (`/api/callback-request`)
 - Frontend rewired to call local `/api/*` endpoints only
 - UTF-8-safe frontend text cleanup
+- Conversion upgrades:
+  - Offer-led CTA copy ("Get 3 qualified viewings in 7 days")
+  - Above-fold case metric block
+  - Localized trust signals
+  - 3-step pre-qualifier before booking
+  - One-click WhatsApp fallback + callback request form when slots fail
 
 ## 1) Create environment file
 
@@ -45,6 +52,12 @@ Open:
 
 `http://localhost:3000/ansury-ai-1.html`
 
+## Build check
+
+```bash
+npm run build
+```
+
 ## 3) Lead capture storage
 
 Conversation and booking events are stored in:
@@ -67,6 +80,48 @@ Recommended fields:
 - `BookingUid`
 - `PayloadJson`
 
-## 5) Security note
+## 5) Deploy Guide
+
+### Option A (Recommended): Vercel
+
+This repo already includes `vercel.json` and `server.js` export compatibility.
+
+1. Create a Vercel project from this folder/repo.
+2. Add Environment Variables in Vercel Project Settings:
+   - `ANTHROPIC_API_KEY`
+   - `ANTHROPIC_MODEL`
+   - `ANTHROPIC_VERSION`
+   - `CAL_API_KEY`
+   - `CAL_API_VERSION`
+   - `FALLBACK_WHATSAPP`
+   - `FALLBACK_EMAIL`
+   - `AIRTABLE_PAT`
+   - `AIRTABLE_BASE_ID`
+   - `AIRTABLE_TABLE_NAME`
+3. Deploy from CLI:
+
+```bash
+npm i -g vercel
+vercel
+vercel --prod
+```
+
+4. Open your production URL and test:
+   - `/api/health`
+   - CTA click -> booking flow
+   - callback fallback form submission
+
+### Option B: Cloudflare (Pages + Functions/Workers)
+
+Because this project is Express-based backend + API routes, Vercel is the fastest path.
+For Cloudflare, you should migrate backend endpoints from Express to Pages Functions or Workers first.
+
+Recommended Cloudflare path:
+1. Keep this HTML/CSS/JS UI.
+2. Recreate `/api/*` handlers in `functions/` (Pages Functions) or Worker routes.
+3. Move env vars to Cloudflare project bindings/secrets.
+4. Deploy via Cloudflare Pages Git integration or Wrangler.
+
+## 6) Security note
 
 If any API key has been shared publicly or in chat, revoke it and create a new key before production use.

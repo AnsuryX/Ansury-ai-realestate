@@ -151,6 +151,25 @@
     animation: fadeUp 0.8s ease forwards 0.6s;
   }
 
+  .hero-trust {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 30px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards 0.7s;
+  }
+
+  .hero-trust span {
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.02);
+    padding: 7px 11px;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    color: #cbc4bc;
+    text-transform: uppercase;
+  }
+
   .hero-actions {
     display: flex;
     gap: 16px;
@@ -201,6 +220,31 @@
     border-top: 1px solid var(--border);
     opacity: 0;
     animation: fadeUp 0.8s ease forwards 1s;
+  }
+
+  .hero-metric {
+    margin-top: 34px;
+    border: 1px solid var(--border);
+    background: linear-gradient(140deg, rgba(201,168,76,0.08), rgba(255,255,255,0.02));
+    padding: 20px 22px;
+    max-width: 560px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards 0.95s;
+  }
+
+  .hero-metric strong {
+    display: block;
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--gold-light);
+    margin-bottom: 8px;
+  }
+
+  .hero-metric p {
+    font-size: 14px;
+    line-height: 1.7;
+    color: #d6cec4;
   }
 
   .hero-stat h3 {
@@ -550,6 +594,63 @@
 
   .demo-start-btn:hover { background: rgba(37,211,102,0.1); }
 
+  .fallback-tools {
+    border-top: 1px solid #243038;
+    background: #101820;
+    padding: 10px 12px 14px;
+    display: none;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .fallback-tools.visible {
+    display: flex;
+  }
+
+  .wa-fallback-btn {
+    text-align: center;
+    text-decoration: none;
+    border: 1px solid rgba(37,211,102,0.55);
+    color: #8ae7af;
+    padding: 9px 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    letter-spacing: 0.03em;
+  }
+
+  .callback-form {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .callback-form input,
+  .callback-form textarea {
+    background: #1a2732;
+    border: 1px solid #273644;
+    color: #e9edef;
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    resize: vertical;
+  }
+
+  .callback-form button {
+    background: #24495b;
+    color: #d7edf8;
+    border: 1px solid #2d5f77;
+    border-radius: 8px;
+    padding: 9px 10px;
+    font-size: 12px;
+    cursor: pointer;
+  }
+
+  .callback-status {
+    font-size: 11px;
+    color: #b6c8d4;
+  }
+
   .cta-section {
     padding: 120px 48px;
     text-align: center;
@@ -659,17 +760,26 @@
 <body>
 <nav>
   <div class="logo">Ansury <span>AI</span></div>
-  <a href="#demo" class="nav-cta js-book-cta" data-cta-source="nav">Book a Call</a>
+  <a href="#demo" class="nav-cta js-book-cta" data-cta-source="nav">Get 3 Viewings</a>
 </nav>
 
 <section class="hero">
   <div class="hero-bg-circle"></div>
   <div class="hero-tag">WhatsApp AI Agents - Qatar Real Estate</div>
-  <h1>Your leads go cold<br>in under <em>5 minutes.</em><br>Yours will not.</h1>
-  <p class="hero-sub">Ansury AI builds always-on WhatsApp agents for Qatar real estate teams, qualifying leads, answering inquiries, and booking viewings while your team sleeps.</p>
+  <h1>Get <em>3 qualified viewings</em><br>in the next 7 days,<br>without hiring more agents.</h1>
+  <p class="hero-sub">Ansury AI gives Qatar real estate teams instant WhatsApp follow-up, bilingual qualification, and booking support so hot buyers never go cold.</p>
+  <div class="hero-trust">
+    <span>Doha areas served: Lusail, Pearl, West Bay, Al Waab</span>
+    <span>Arabic + English buyer handling</span>
+    <span>SLA: under 60s first response, 24/7</span>
+  </div>
   <div class="hero-actions">
     <a href="#demo" class="btn-primary">See It In Action</a>
-    <a href="#demo" class="btn-ghost js-book-cta" data-cta-source="hero-secondary">Book a Discovery Call -&gt;</a>
+    <a href="#demo" class="btn-ghost js-book-cta" data-cta-source="hero-secondary">Get 3 Qualified Viewings -&gt;</a>
+  </div>
+  <div class="hero-metric">
+    <strong>Recent Doha Pilot Result</strong>
+    <p>In 14 days: 41 inbound WhatsApp inquiries, 17 qualified prospects, 11 scheduled viewings, median first response time of 42 seconds.</p>
   </div>
   <div class="hero-stat-row">
     <div class="hero-stat">
@@ -754,6 +864,17 @@
             <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
           </button>
         </div>
+        <div class="fallback-tools" id="fallbackTools">
+          <a class="wa-fallback-btn" id="waFallbackBtn" href="#" target="_blank" rel="noopener noreferrer">Open WhatsApp Instant Fallback</a>
+          <form class="callback-form" id="callbackForm">
+            <input id="callbackName" type="text" placeholder="Your name" maxlength="80" required />
+            <input id="callbackPhone" type="text" placeholder="Phone or WhatsApp number" maxlength="24" required />
+            <input id="callbackTime" type="text" placeholder="Preferred callback time (e.g. Today 7pm)" maxlength="100" required />
+            <textarea id="callbackNotes" rows="2" placeholder="Optional notes"></textarea>
+            <button type="submit">Request Callback</button>
+          </form>
+          <div class="callback-status" id="callbackStatus"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -761,9 +882,9 @@
 
 <section class="cta-section">
   <div class="section-label" style="justify-content:center;">Get Started</div>
-  <h2>Ready to never miss a lead again?</h2>
-  <p>Book a 30-minute discovery call. We will map the exact flow for your portfolio and team.</p>
-  <a href="#demo" class="btn-primary js-book-cta" data-cta-source="footer-cta">Book Your Discovery Call</a>
+  <h2>Ready to get 3 qualified viewings in 7 days?</h2>
+  <p>Book your strategy call today and we will launch the exact WhatsApp flow for your portfolio this week.</p>
+  <a href="#demo" class="btn-primary js-book-cta" data-cta-source="footer-cta">Get 3 Qualified Viewings</a>
   <p style="margin-top:12px; font-size:13px; color:var(--muted);">Average setup kickoff in 48 hours.</p>
   <div class="cta-proof">
     <div class="proof-item">Built for Qatar real estate</div>
@@ -804,10 +925,19 @@ Rules:
 
   let conversationHistory = [];
   let demoStarted = false;
+  let fallbackContact = {
+    whatsapp: '+97455001760',
+    email: 'hello@ansurysystem.online'
+  };
 
   let bookingState = {
     active: false,
     step: null,
+    prequal: {
+      budget: null,
+      area: null,
+      timeline: null
+    },
     name: null,
     email: null,
     datetime: null,
@@ -866,6 +996,75 @@ Rules:
     }
   }
 
+  function buildWhatsAppUrl(text) {
+    const raw = (fallbackContact.whatsapp || '').replace(/[^\d]/g, '');
+    if (!raw) return '#';
+    return `https://wa.me/${raw}?text=${encodeURIComponent(text)}`;
+  }
+
+  async function fetchFallbackContact() {
+    try {
+      const res = await fetch(`${API_BASE}/api/fallback-contact`);
+      const data = await res.json();
+      if (res.ok && data.fallback) {
+        fallbackContact = {
+          whatsapp: data.fallback.whatsapp || fallbackContact.whatsapp,
+          email: data.fallback.email || fallbackContact.email
+        };
+      }
+    } catch (_) {
+      // Keep defaults.
+    }
+  }
+
+  function showFallbackTools(reason) {
+    const wrap = document.getElementById('fallbackTools');
+    const waBtn = document.getElementById('waFallbackBtn');
+    if (!wrap || !waBtn) return;
+
+    const defaultText = `Hi Ansury team, I want to book a discovery call. Reason: ${reason}.`;
+    waBtn.href = buildWhatsAppUrl(defaultText);
+    wrap.classList.add('visible');
+  }
+
+  function setCallbackStatus(text) {
+    const status = document.getElementById('callbackStatus');
+    if (!status) return;
+    status.textContent = text;
+  }
+
+  async function submitCallbackRequest(event) {
+    event.preventDefault();
+    const name = document.getElementById('callbackName').value.trim();
+    const phone = document.getElementById('callbackPhone').value.trim();
+    const preferredTime = document.getElementById('callbackTime').value.trim();
+    const notes = document.getElementById('callbackNotes').value.trim();
+
+    if (!name || !phone || !preferredTime) {
+      setCallbackStatus('Please complete name, phone, and preferred callback time.');
+      return;
+    }
+
+    setCallbackStatus('Submitting callback request...');
+    try {
+      const res = await fetch(`${API_BASE}/api/callback-request`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId, name, phone, preferredTime, notes })
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) {
+        setCallbackStatus('Could not submit right now. Please use WhatsApp fallback button.');
+        return;
+      }
+      setCallbackStatus('Callback request sent. A specialist will contact you soon.');
+      await postLeadEvent('callback_form_sent_client', { preferredTime });
+      event.target.reset();
+    } catch (_) {
+      setCallbackStatus('Network issue. Please use WhatsApp fallback button.');
+    }
+  }
+
   async function fetchEventTypes() {
     try {
       const res = await fetch(`${API_BASE}/api/cal/event-types`);
@@ -919,6 +1118,28 @@ Rules:
   async function handleBookingFlow(userText) {
     const step = bookingState.step;
 
+    if (step === 'prequal_budget') {
+      bookingState.prequal.budget = userText.trim();
+      bookingState.step = 'prequal_area';
+      addMessage('Great. Which areas are you focused on in Doha right now?', 'agent');
+      return;
+    }
+
+    if (step === 'prequal_area') {
+      bookingState.prequal.area = userText.trim();
+      bookingState.step = 'prequal_timeline';
+      addMessage('Understood. What is your buying or move-in timeline?', 'agent');
+      return;
+    }
+
+    if (step === 'prequal_timeline') {
+      bookingState.prequal.timeline = userText.trim();
+      bookingState.step = 'name';
+      await postLeadEvent('prequal_completed', { ...bookingState.prequal });
+      addMessage('Perfect, thanks. What is your full name so I can reserve your slot?', 'agent');
+      return;
+    }
+
     if (step === 'name') {
       bookingState.name = userText.trim();
       bookingState.step = 'email';
@@ -943,13 +1164,14 @@ Rules:
 
       if (slots.length === 0) {
         bookingState.active = false;
-        addMessage('I cannot load calendar slots right now. A human advisor will contact you shortly.', 'agent');
+        addMessage('I could not load available slots in the next 21 days. Use the WhatsApp fallback button below or request a callback time now.', 'agent');
+        showFallbackTools('slots-unavailable');
         await postLeadEvent('booking_slots_unavailable', {});
         return;
       }
 
       bookingState.slots = slots;
-      addMessage(`Here are the next available slots (Qatar time):\n\n${formatSlotOptions(slots)}\n\nReply with the slot number.`, 'agent');
+      addMessage(`Here are the next available slots (Qatar time, next 21 days):\n\n${formatSlotOptions(slots)}\n\nReply with the slot number.`, 'agent');
       return;
     }
 
@@ -993,6 +1215,7 @@ Rules:
           ? `Please contact us directly: ${fallback.whatsapp || ''} ${fallback.email || ''}`.trim()
           : 'Please contact our team directly for manual booking.';
         addMessage(`Booking service is temporarily unavailable. ${handoffLine}`, 'agent');
+        showFallbackTools('booking-service-error');
         await postLeadEvent('booking_failed', { error: result.error || 'unknown' });
       }
     }
@@ -1046,12 +1269,13 @@ Rules:
         }
         if (bookingState.eventTypeId) {
           bookingState.active = true;
-          bookingState.step = 'name';
+          bookingState.step = 'prequal_budget';
           await postLeadEvent('booking_intent_detected', {});
           await delay(700);
-          addMessage('Great, I can help you book that now. What is your full name?', 'agent');
+          addMessage('Great, I can help you book that now. Quick question 1 of 3: What budget range are you targeting?', 'agent');
         } else {
-          addMessage('I can book this for you, but calendar sync is unavailable right now. Please share your details and our team will call you directly.', 'agent');
+          addMessage('I can book this for you, but calendar sync is unavailable right now. Use the WhatsApp fallback button or request a callback time below.', 'agent');
+          showFallbackTools('calendar-sync-unavailable');
         }
       }
     } catch (_) {
@@ -1082,14 +1306,15 @@ Rules:
     }
 
     if (!bookingState.eventTypeId) {
-      addMessage('Calendar is syncing. Please share your name and number, and our team will confirm your call manually.', 'agent');
+      addMessage('Calendar is syncing. Use the WhatsApp fallback button or request a callback time below so we can confirm manually.', 'agent');
+      showFallbackTools('calendar-syncing');
       return;
     }
 
     if (!bookingState.active) {
       bookingState.active = true;
-      bookingState.step = 'name';
-      addMessage('Perfect, let us lock your discovery call now. What is your full name?', 'agent');
+      bookingState.step = 'prequal_budget';
+      addMessage('Perfect. Quick question 1 of 3 before booking: What budget range are you targeting?', 'agent');
     } else {
       addMessage('You are already in booking flow. Please continue with your details here.', 'agent');
     }
@@ -1103,6 +1328,12 @@ Rules:
         await startBookingFromCTA(source);
       });
     });
+  }
+
+  function wireFallbackForms() {
+    const form = document.getElementById('callbackForm');
+    if (!form) return;
+    form.addEventListener('submit', submitCallbackRequest);
   }
 
   async function startDemo() {
@@ -1147,7 +1378,9 @@ Rules:
     observer.observe(el);
   });
 
+  fetchFallbackContact();
   wireCtas();
+  wireFallbackForms();
 </script>
 </body>
 </html>

@@ -2,3 +2,6 @@ node_modules/
 .env
 data/
 *.log
+.vercel/
+.wrangler/
+.dev.vars

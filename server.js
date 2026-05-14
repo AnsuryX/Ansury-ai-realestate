@@ -29,11 +29,14 @@ const AIRTABLE_TABLE_NAME = process.env.AIRTABLE_TABLE_NAME || "";
 const AIRTABLE_TABLE_ID = process.env.AIRTABLE_TABLE_ID || "";
 const AIRTABLE_SYNC_EVENTS = new Set([
   "demo_started",
+  "cta_book_clicked",
   "user_message",
   "agent_message",
+  "prequal_completed",
   "booking_success",
   "booking_failed",
   "booking_slots_unavailable",
+  "callback_request_submitted",
   "chat_backend_error",
   "chat_network_error"
 ]);
@@ -68,6 +71,11 @@ function getFallbackContact() {
     whatsapp: FALLBACK_WHATSAPP,
     email: FALLBACK_EMAIL
   };
+}
+
+function sanitizePhone(value) {
+  if (typeof value !== "string") return "";
+  return value.replace(/[^\d+]/g, "").slice(0, 24);
 }
 
 async function ensureStore() {
@@ -432,6 +440,12 @@ app.get("/api/health", (_req, res) => {
   });
 });
 
+app.get("/api/fallback-contact", (_req, res) => {
+  res.json({
+    fallback: getFallbackContact()
+  });
+});
+
 app.post("/api/chat", async (req, res) => {
   const sessionId = sanitizeText(req.body.sessionId) || crypto.randomUUID();
   const systemPrompt = sanitizeText(req.body.systemPrompt);
@@ -726,6 +740,50 @@ app.post("/api/lead-event", async (req, res) => {
   }
 });
 
+app.post("/api/callback-request", async (req, res) => {
+  const sessionId = sanitizeText(req.body.sessionId) || crypto.randomUUID();
+  const name = sanitizeText(req.body.name);
+  const phone = sanitizePhone(req.body.phone);
+  const preferredTime = sanitizeText(req.body.preferredTime);
+  const notes = sanitizeText(req.body.notes);
+
+  if (!name || !phone || !preferredTime) {
+    return res.status(400).json({ error: "name, phone and preferredTime are required." });
+  }
+
+  try {
+    await logLeadEvent(sessionId, "callback_request_submitted", {
+      name,
+      phone,
+      preferredTime,
+      notes
+    });
+
+    await forwardToCRM({
+      type: "callback_request_submitted",
+      sessionId,
+      attendeeName: name,
+      message: notes,
+      slot: preferredTime,
+      payload: {
+        name,
+        phone,
+        preferredTime,
+        notes
+      },
+      timestamp: safeNowIso()
+    });
+
+    return res.json({ ok: true });
+  } catch (error) {
+    console.error("[callback-request] fatal:", error);
+    return res.status(500).json({
+      error: "Could not save callback request.",
+      fallback: getFallbackContact()
+    });
+  }
+});
+
 app.use((err, _req, res, _next) => {
   console.error("[unhandled]", err);
   res.status(500).json({
@@ -734,8 +792,19 @@ app.use((err, _req, res, _next) => {
   });
 });
 
-app.listen(PORT, async () => {
+async function boot() {
   assertEnv();
   await ensureStore();
-  console.log(`Ansury server running on http://localhost:${PORT}`);
-});
+}
+
+if (process.env.VERCEL) {
+  boot().catch((error) => {
+    console.error("[boot] failed on Vercel:", error);
+  });
+  module.exports = app;
+} else {
+  app.listen(PORT, async () => {
+    await boot();
+    console.log(`Ansury server running on http://localhost:${PORT}`);
+  });
+}

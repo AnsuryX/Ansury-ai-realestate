@@ -4,6 +4,7 @@
   "description": "Ansury AI landing page with secure backend APIs",
   "main": "server.js",
   "scripts": {
+    "build": "node --check server.js",
     "start": "node server.js",
     "dev": "node server.js"
   },
