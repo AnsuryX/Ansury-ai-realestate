@@ -1,0 +1,22 @@
+# Ansury AI
+
+Ansury AI builds WhatsApp AI agents for Qatar real estate teams. The service helps agencies respond instantly, qualify buyers in English and Arabic, answer listing questions, and book property viewings.
+
+## Primary Audience
+
+- Qatar real estate agencies
+- Doha property teams
+- Sales teams handling WhatsApp inquiries
+- Real estate operators serving Lusail, The Pearl, West Bay, and Al Waab
+
+## Core Topics
+
+- WhatsApp AI agents
+- Qatar real estate lead qualification
+- Bilingual Arabic and English buyer handling
+- 24/7 inquiry response
+- Property viewing booking automation
+
+## Canonical URL
+
+https://ansury.ai/
