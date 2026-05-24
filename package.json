@@ -6,7 +6,8 @@
   "scripts": {
     "build": "node --check server.js",
     "start": "node server.js",
-    "dev": "node server.js"
+    "dev": "node server.js",
+    "setup:tally": "node scripts/setup-tally.mjs"
   },
   "keywords": [],
   "author": "",

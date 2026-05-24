@@ -27,9 +27,17 @@ const AIRTABLE_PAT = process.env.AIRTABLE_PAT || process.env.AIRTABLE_TOKEN || "
 const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID || "";
 const AIRTABLE_TABLE_NAME = process.env.AIRTABLE_TABLE_NAME || "";
 const AIRTABLE_TABLE_ID = process.env.AIRTABLE_TABLE_ID || "";
+const TALLY_ROLLOUT_FORM_ID = process.env.TALLY_ROLLOUT_FORM_ID || "";
+const TALLY_ROLLOUT_FORM_URL = process.env.TALLY_ROLLOUT_FORM_URL || (TALLY_ROLLOUT_FORM_ID ? `https://tally.so/r/${TALLY_ROLLOUT_FORM_ID}` : "");
+const TALLY_DEMO_FORM_ID = process.env.TALLY_DEMO_FORM_ID || "";
+const TALLY_DEMO_FORM_URL = process.env.TALLY_DEMO_FORM_URL || (TALLY_DEMO_FORM_ID ? `https://tally.so/r/${TALLY_DEMO_FORM_ID}` : "");
+const TALLY_WEBHOOK_SIGNING_SECRET = process.env.TALLY_WEBHOOK_SIGNING_SECRET || "";
 const AIRTABLE_SYNC_EVENTS = new Set([
   "demo_started",
+  "demo_lead_submitted",
   "cta_book_clicked",
+  "tally_form_opened",
+  "tally_form_submitted",
   "user_message",
   "agent_message",
   "agent_error",
@@ -89,6 +97,57 @@ function getFallbackContact() {
 function sanitizePhone(value) {
   if (typeof value !== "string") return "";
   return value.replace(/[^\d+]/g, "").slice(0, 24);
+}
+
+function sanitizeObject(value, depth = 0) {
+  if (depth > 4) return null;
+  if (value == null) return value;
+  if (typeof value === "string") return sanitizeText(value);
+  if (typeof value === "number" || typeof value === "boolean") return value;
+  if (Array.isArray(value)) return value.slice(0, 50).map((item) => sanitizeObject(item, depth + 1));
+  if (typeof value === "object") {
+    return Object.fromEntries(
+      Object.entries(value)
+        .slice(0, 80)
+        .map(([key, item]) => [sanitizeText(key).slice(0, 120), sanitizeObject(item, depth + 1)])
+    );
+  }
+  return null;
+}
+
+function normalizeTallyFields(fields) {
+  if (!Array.isArray(fields)) return {};
+  return fields.reduce((acc, field) => {
+    const label = sanitizeText(field?.label || field?.key || "field").slice(0, 120);
+    if (!label) return acc;
+    acc[label] = sanitizeObject(field?.value);
+    return acc;
+  }, {});
+}
+
+function verifyTallySignature(req) {
+  if (!TALLY_WEBHOOK_SIGNING_SECRET) return true;
+  const receivedSignature = String(req.headers["tally-signature"] || "");
+  if (!receivedSignature) return false;
+  const calculatedSignature = crypto
+    .createHmac("sha256", TALLY_WEBHOOK_SIGNING_SECRET)
+    .update(JSON.stringify(req.body))
+    .digest("base64");
+  if (receivedSignature.length !== calculatedSignature.length) return false;
+  return crypto.timingSafeEqual(Buffer.from(receivedSignature), Buffer.from(calculatedSignature));
+}
+
+function getTallyPublicConfig() {
+  return {
+    rollout: {
+      id: TALLY_ROLLOUT_FORM_ID,
+      url: TALLY_ROLLOUT_FORM_URL
+    },
+    demo: {
+      id: TALLY_DEMO_FORM_ID,
+      url: TALLY_DEMO_FORM_URL
+    }
+  };
 }
 
 async function ensureStore() {
@@ -625,6 +684,66 @@ app.get("/api/fallback-contact", (_req, res) => {
   });
 });
 
+app.get("/api/tally/config", (_req, res) => {
+  res.json({
+    tally: getTallyPublicConfig()
+  });
+});
+
+app.post("/api/tally/webhook", async (req, res) => {
+  if (!verifyTallySignature(req)) {
+    return res.status(401).json({ error: "Invalid Tally signature." });
+  }
+
+  const data = req.body?.data || {};
+  const fields = normalizeTallyFields(data.fields);
+  const sessionId = sanitizeText(fields.sessionId || fields["Session ID"] || data.responseId || data.submissionId || crypto.randomUUID());
+  const formName = sanitizeText(data.formName || "Tally form");
+  const email = sanitizeText(fields["Work email"] || fields.Email || fields.email || "");
+  const phone = sanitizePhone(fields["WhatsApp number"] || fields.Phone || fields.phone || "");
+  const name = sanitizeText(fields["Your name"] || fields.Name || fields.name || "");
+
+  const payload = {
+    provider: "tally",
+    formId: sanitizeText(data.formId || ""),
+    formName,
+    responseId: sanitizeText(data.responseId || data.submissionId || ""),
+    submissionPreviewUrl: sanitizeText(data.submissionPreviewUrl || ""),
+    fields
+  };
+
+  try {
+    await logLeadEvent(sessionId, "tally_form_submitted", payload);
+    await updateLeadSession(sessionId, (lead) => {
+      lead.identity = {
+        ...(lead.identity || {}),
+        name: name || lead.identity?.name || "",
+        email: email || lead.identity?.email || "",
+        phone: phone || lead.identity?.phone || ""
+      };
+      lead.tally = {
+        ...(lead.tally || {}),
+        lastFormId: payload.formId,
+        lastFormName: formName,
+        lastResponseId: payload.responseId,
+        lastSubmissionAt: safeNowIso()
+      };
+    });
+    await forwardToCRM({
+      type: "tally_form_submitted",
+      sessionId,
+      attendeeName: name,
+      attendeeEmail: email,
+      payload,
+      timestamp: safeNowIso()
+    });
+    return res.json({ ok: true });
+  } catch (error) {
+    console.error("[tally/webhook] fatal:", error);
+    return res.status(500).json({ error: "Could not process Tally webhook." });
+  }
+});
+
 app.post("/api/chat", async (req, res) => {
   const sessionId = sanitizeText(req.body.sessionId) || crypto.randomUUID();
   const systemPrompt = sanitizeText(req.body.systemPrompt);
@@ -918,6 +1037,71 @@ app.post("/api/lead-event", async (req, res) => {
   } catch (error) {
     console.error("[lead-event] fatal:", error);
     return res.status(500).json({ error: "Could not persist event." });
+  }
+});
+
+app.post("/api/demo-lead", async (req, res) => {
+  const sessionId = sanitizeText(req.body.sessionId) || crypto.randomUUID();
+  const name = sanitizeText(req.body.name);
+  const email = sanitizeText(req.body.email);
+  const phone = sanitizePhone(req.body.phone);
+  const agency = sanitizeText(req.body.agency);
+  const notes = sanitizeText(req.body.notes);
+  const source = sanitizeText(req.body.source || "demo");
+  const conversationHistory = Array.isArray(req.body.conversationHistory)
+    ? req.body.conversationHistory
+        .filter((message) => message && (message.role === "user" || message.role === "assistant"))
+        .slice(-20)
+        .map((message) => ({
+          role: message.role,
+          content: sanitizeText(message.content)
+        }))
+    : [];
+
+  if (!name || !phone || (email && !isValidEmail(email))) {
+    return res.status(400).json({ error: "Name and phone are required; email must be valid when provided." });
+  }
+
+  const payload = {
+    name,
+    email,
+    phone,
+    agency,
+    notes,
+    source,
+    conversationHistory
+  };
+
+  try {
+    await updateLeadSession(sessionId, (lead) => {
+      lead.identity = {
+        ...(lead.identity || {}),
+        name,
+        email,
+        phone,
+        agency
+      };
+      lead.demoLead = {
+        source,
+        notes,
+        submittedAt: safeNowIso(),
+        conversationHistory
+      };
+    });
+    await logLeadEvent(sessionId, "demo_lead_submitted", payload);
+    await forwardToCRM({
+      type: "demo_lead_submitted",
+      sessionId,
+      attendeeName: name,
+      attendeeEmail: email,
+      message: notes,
+      payload,
+      timestamp: safeNowIso()
+    });
+    return res.json({ ok: true, sessionId });
+  } catch (error) {
+    console.error("[demo-lead] fatal:", error);
+    return res.status(500).json({ error: "Could not save demo lead." });
   }
 });
 

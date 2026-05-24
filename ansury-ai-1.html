@@ -622,6 +622,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   .phone-wrap {
     display: flex;
     justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
   }
 
   .phone {
@@ -865,6 +868,38 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     color: #b6c8d4;
   }
 
+  .demo-capture-panel {
+    width: min(420px, 100%);
+    border: 1px solid var(--border);
+    background: rgba(21,32,51,0.72);
+    padding: 18px;
+  }
+
+  .demo-capture-panel h3 {
+    font-family: 'Sora', sans-serif;
+    font-size: 15px;
+    margin-bottom: 8px;
+  }
+
+  .demo-capture-panel p {
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.6;
+    margin-bottom: 14px;
+  }
+
+  .demo-capture-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-top: 8px;
+  }
+
+  .demo-capture-actions button,
+  .demo-capture-actions a {
+    flex: 1;
+  }
+
   .cta-section {
     padding: 120px 48px;
     text-align: center;
@@ -1018,6 +1053,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     .pain-section, .system-section, .workflow-section, .demo-section, .cta-section { padding: 72px 24px; }
     .system-grid, .workflow-grid { grid-template-columns: 1fr; }
     .demo-inner { grid-template-columns: 1fr; gap: 48px; }
+    .demo-capture-actions { flex-direction: column; }
+    .demo-capture-actions button,
+    .demo-capture-actions a { width: 100%; }
     .hero-stat-row { gap: 32px; flex-wrap: wrap; }
     footer { flex-direction: column; gap: 12px; text-align: center; }
   }
@@ -1242,6 +1280,22 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <div class="callback-status" id="callbackStatus"></div>
         </div>
       </div>
+      <div class="demo-capture-panel">
+        <h3>Save this demo context without another AI call</h3>
+        <p>Send the current session, lead details, and recent conversation history to the CRM so we can prepare your rollout call.</p>
+        <form class="callback-form" id="demoLeadForm">
+          <input id="demoLeadName" type="text" placeholder="Your name" maxlength="80" required />
+          <input id="demoLeadAgency" type="text" placeholder="Agency name" maxlength="100" />
+          <input id="demoLeadEmail" type="email" placeholder="Work email" maxlength="120" />
+          <input id="demoLeadPhone" type="text" placeholder="Phone or WhatsApp number" maxlength="24" required />
+          <textarea id="demoLeadNotes" rows="2" placeholder="What should we prepare?"></textarea>
+          <div class="demo-capture-actions">
+            <button type="submit">Save Demo Lead</button>
+            <a class="wa-fallback-btn js-tally-demo" href="#" data-cta-source="demo-capture">Open Tally Form</a>
+          </div>
+        </form>
+        <div class="callback-status" id="demoLeadStatus"></div>
+      </div>
     </div>
   </div>
 </section>
@@ -1266,6 +1320,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <p>&copy; 2026 Ansury Systems - Doha, Qatar - WhatsApp-first real estate CRM.</p>
 </footer>
 
+<script async src="https://tally.so/widgets/embed.js"></script>
 <script>
   const API_BASE = window.location.origin;
   const SYSTEM_PROMPT = `You are Layla, an Ansury Systems WhatsApp CRM assistant for Qatar real estate agencies.
@@ -1300,6 +1355,10 @@ Rules:
   let fallbackContact = {
     whatsapp: '+97455001760',
     email: 'hello@ansurysystem.online'
+  };
+  let tallyConfig = {
+    rollout: { id: '', url: '' },
+    demo: { id: '', url: '' }
   };
 
   let bookingState = {
@@ -1389,6 +1448,81 @@ Rules:
     }
   }
 
+  async function fetchTallyConfig() {
+    try {
+      const res = await fetch(`${API_BASE}/api/tally/config`);
+      const data = await res.json();
+      if (res.ok && data.tally) {
+        tallyConfig = {
+          rollout: data.tally.rollout || tallyConfig.rollout,
+          demo: data.tally.demo || tallyConfig.demo
+        };
+      }
+    } catch (_) {
+      // Keep local defaults.
+    }
+  }
+
+  function getUtmParams() {
+    const params = new URLSearchParams(window.location.search);
+    return {
+      utm_source: params.get('utm_source') || '',
+      utm_medium: params.get('utm_medium') || '',
+      utm_campaign: params.get('utm_campaign') || ''
+    };
+  }
+
+  function getConversationSummary() {
+    return conversationHistory
+      .slice(-10)
+      .map((message) => `${message.role}: ${message.content}`)
+      .join('\n')
+      .slice(0, 1800);
+  }
+
+  function getLastUserMessage() {
+    const last = [...conversationHistory].reverse().find((message) => message.role === 'user');
+    return last ? last.content.slice(0, 500) : '';
+  }
+
+  async function openTallyForm(kind, source) {
+    const form = tallyConfig[kind] || {};
+    const hiddenFields = {
+      sessionId,
+      source,
+      pageUrl: window.location.href,
+      conversationSummary: getConversationSummary(),
+      lastUserMessage: getLastUserMessage(),
+      ...getUtmParams()
+    };
+
+    if (!form.id && !form.url) return false;
+
+    await postLeadEvent('tally_form_opened', {
+      kind,
+      source,
+      formId: form.id || '',
+      formUrl: form.url || ''
+    });
+
+    if (window.Tally && typeof window.Tally.openPopup === 'function' && form.id) {
+      window.Tally.openPopup(form.id, {
+        hiddenFields,
+        layout: 'modal',
+        width: 720
+      });
+      return true;
+    }
+
+    const url = form.url || `https://tally.so/r/${form.id}`;
+    const target = new URL(url);
+    Object.entries(hiddenFields).forEach(([key, value]) => {
+      if (value) target.searchParams.set(key, value);
+    });
+    window.open(target.toString(), '_blank', 'noopener,noreferrer');
+    return true;
+  }
+
   function showFallbackTools(reason) {
     const wrap = document.getElementById('fallbackTools');
     const waBtn = document.getElementById('waFallbackBtn');
@@ -1403,6 +1537,53 @@ Rules:
     const status = document.getElementById('callbackStatus');
     if (!status) return;
     status.textContent = text;
+  }
+
+  function setDemoLeadStatus(text) {
+    const status = document.getElementById('demoLeadStatus');
+    if (!status) return;
+    status.textContent = text;
+  }
+
+  async function submitDemoLead(event) {
+    event.preventDefault();
+    const name = document.getElementById('demoLeadName').value.trim();
+    const agency = document.getElementById('demoLeadAgency').value.trim();
+    const email = document.getElementById('demoLeadEmail').value.trim();
+    const phone = document.getElementById('demoLeadPhone').value.trim();
+    const notes = document.getElementById('demoLeadNotes').value.trim();
+
+    if (!name || !phone) {
+      setDemoLeadStatus('Please add your name and WhatsApp number.');
+      return;
+    }
+
+    setDemoLeadStatus('Saving demo lead...');
+    try {
+      const res = await fetch(`${API_BASE}/api/demo-lead`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sessionId,
+          name,
+          agency,
+          email,
+          phone,
+          notes,
+          source: 'demo-capture-panel',
+          conversationHistory
+        })
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) {
+        setDemoLeadStatus(data.error || 'Could not save right now. Use the Tally form or WhatsApp fallback.');
+        return;
+      }
+      setDemoLeadStatus('Demo lead saved. We have the session context.');
+      event.target.reset();
+    } catch (_) {
+      setDemoLeadStatus('Network issue. Use the Tally form or WhatsApp fallback.');
+    }
   }
 
   async function submitCallbackRequest(event) {
@@ -1674,6 +1855,10 @@ Rules:
   }
 
   async function startBookingFromCTA(source) {
+    if (await openTallyForm('rollout', source)) {
+      return;
+    }
+
     document.getElementById('demo').scrollIntoView({ behavior: 'smooth', block: 'start' });
     openChatUi();
     await postLeadEvent('cta_book_clicked', { source });
@@ -1709,8 +1894,20 @@ Rules:
 
   function wireFallbackForms() {
     const form = document.getElementById('callbackForm');
-    if (!form) return;
-    form.addEventListener('submit', submitCallbackRequest);
+    if (form) form.addEventListener('submit', submitCallbackRequest);
+
+    const demoLeadForm = document.getElementById('demoLeadForm');
+    if (demoLeadForm) demoLeadForm.addEventListener('submit', submitDemoLead);
+
+    document.querySelectorAll('.js-tally-demo').forEach((button) => {
+      button.addEventListener('click', async (event) => {
+        event.preventDefault();
+        const source = button.getAttribute('data-cta-source') || 'demo';
+        if (!(await openTallyForm('demo', source))) {
+          setDemoLeadStatus('Tally form is not configured yet. Use the local save form above.');
+        }
+      });
+    });
   }
 
   async function startDemo() {
@@ -1756,6 +1953,7 @@ Rules:
   });
 
   fetchFallbackContact();
+  fetchTallyConfig();
   wireCtas();
   wireFallbackForms();
 </script>

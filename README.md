@@ -7,10 +7,13 @@ This project now runs with a backend API so keys are never exposed in the browse
 - Express backend API (`server.js`)
 - Server-side Anthropic integration with required headers
 - Server-side Cal.com integration
+- Tally rollout/demo-lead form integration
 - Persistent lead capture in `data/leads.json`
 - Airtable CRM sync for lead/booking events
 - Retry + error handling + fallback contact responses
 - Callback-request fallback API (`/api/callback-request`)
+- Demo lead capture API (`/api/demo-lead`)
+- Tally config/webhook APIs (`/api/tally/config`, `/api/tally/webhook`)
 - Frontend rewired to call local `/api/*` endpoints only
 - UTF-8-safe frontend text cleanup
 - Conversion upgrades:
@@ -19,6 +22,7 @@ This project now runs with a backend API so keys are never exposed in the browse
   - Shared inbox, CRM, pipeline, broadcasts, automations, and AI reply sections
   - 3-step agency workflow pre-qualifier before booking
   - One-click WhatsApp fallback + callback request form when slots fail
+  - Tally lead-intake forms for lower-cost CTA capture without starting the AI demo
 
 ## 1) Create environment file
 
@@ -28,6 +32,7 @@ Required:
 
 - `ANTHROPIC_API_KEY`
 - `CAL_API_KEY`
+- `TALLY_API_KEY` (only required when running `npm run setup:tally`)
 
 `CAL_API_VERSION` defaults to `2024-06-14` and backend includes fallback attempts for compatibility.
 
@@ -38,6 +43,9 @@ Recommended:
 - `CRM_WEBHOOK_URL` (optional webhook for HubSpot/Zapier/Make/etc)
 - `AIRTABLE_PAT` (for Airtable CRM sync)
 - `AIRTABLE_BASE_ID` + `AIRTABLE_TABLE_ID` or `AIRTABLE_TABLE_NAME`
+- `TALLY_ROLLOUT_FORM_ID` / `TALLY_ROLLOUT_FORM_URL`
+- `TALLY_DEMO_FORM_ID` / `TALLY_DEMO_FORM_URL`
+- `TALLY_WEBHOOK_SIGNING_SECRET` (recommended for production Tally webhooks)
 
 If Airtable base/table values are blank, the backend attempts auto-discovery with your PAT.
 
@@ -57,6 +65,14 @@ Open:
 ```bash
 npm run build
 ```
+
+## Tally setup
+
+```bash
+npm run setup:tally
+```
+
+This creates the rollout and demo-lead forms in Tally, then writes the public form IDs/URLs to `.env`. If `APP_BASE_URL` is HTTPS, the script also creates Tally webhooks back to `/api/tally/webhook`.
 
 ## 3) Lead capture storage
 
