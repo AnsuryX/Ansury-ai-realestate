@@ -17,8 +17,11 @@ This project now runs with a backend API so keys are never exposed in the browse
 - Frontend rewired to call local `/api/*` endpoints only
 - UTF-8-safe frontend text cleanup
 - Conversion upgrades:
-  - Offer-led CTA copy ("Book Your WhatsApp CRM Rollout")
+  - Zero-risk CTA copy ("Claim The 48-Hour Setup")
   - WhatsApp-first real estate CRM positioning
+  - 48-hour WhatsApp Sales Command Center offer with 3-lead/14-day risk reversal
+  - Qatar real estate qualification copy for budget, property type, QID/residency context, and urgency
+  - Supabase/PostgreSQL RLS ownership and security proof
   - Shared inbox, CRM, pipeline, broadcasts, automations, and AI reply sections
   - 3-step agency workflow pre-qualifier before booking
   - One-click WhatsApp fallback + callback request form when slots fail

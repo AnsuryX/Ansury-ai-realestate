@@ -1,6 +1,6 @@
 # Ansury Systems
 
-Ansury Systems builds a WhatsApp-first CRM for Qatar real estate agencies. The service helps agencies capture every WhatsApp lead, assign it to the right agent, use an AI agent and AI suggested replies, automate workflows, connect webhooks, broadcast listings, and track deals from first inquiry to viewing, offer, and close.
+Ansury Systems installs a WhatsApp Sales Command Center for Qatar real estate agencies in 48 hours. The offer is zero-risk: if the system does not capture or salvage at least 3 property leads in the first 14 days, the agency pays nothing. The platform helps agencies stop losing commissions to agents' personal phones, capture WhatsApp leads, assign them to the right agent, use an AI agent and AI suggested replies, automate workflows, connect webhooks, broadcast listings, and track commissions from first inquiry to viewing, offer, and close.
 
 ## Primary Audience
 
@@ -12,14 +12,15 @@ Ansury Systems builds a WhatsApp-first CRM for Qatar real estate agencies. The s
 ## Core Topics
 
 - WhatsApp shared inbox
-- Contact CRM, tags, timelines, and custom fields
-- Real estate sales pipelines
+- Landlord, investor, off-plan buyer, renter, and owner CRM records
+- Real estate commission pipelines
 - WhatsApp template broadcasts
 - AI agent for qualification, FAQs, next-step guidance, and escalation
+- Qatar-specific lead qualification for budget, property type, Qatari vs. expat/QID context, nationality/residency status, financing, move-in date, and urgency
 - Knowledge-base-powered AI reply suggestions
 - Workflow builder with triggers, waits, branches, tags, assignments, broadcasts, deal creation, and webhook calls
-- Agency-owned customer data and private deployment options
+- Self-hostable Supabase architecture, PostgreSQL row-level security, encrypted WhatsApp token storage, agency-owned customer data, and private deployment options
 
 ## Canonical URL
 
-https://ansury.ai/
+https://ansury-ai.vercel.app/

@@ -71,8 +71,8 @@ function hiddenFields(names) {
 
 function rolloutFormBlocks() {
   return [
-    formTitle("Book your WhatsApp CRM rollout", "Submit rollout request"),
-    text("Tell us how your Qatar real estate agency handles WhatsApp leads today. We will use this to map your shared inbox, AI agent, suggested replies, workflows, webhooks, and pipeline setup."),
+    formTitle("Claim your 48-hour WhatsApp Sales Command Center setup", "Claim 48-hour setup"),
+    text("Stop losing commissions to agents' personal phones. We will set up your unified WhatsApp Sales Command Center in 48 hours. If it does not capture or salvage at least 3 property leads in your first 14 days, you pay absolutely nothing."),
     ...question("Your name", "INPUT_TEXT", { isRequired: true }),
     ...question("Agency name", "INPUT_TEXT", { isRequired: true }),
     ...question("Work email", "INPUT_EMAIL", { isRequired: true }),
@@ -81,21 +81,22 @@ function rolloutFormBlocks() {
       internationalFormat: true,
       defaultCountryCode: "QA"
     }),
-    ...question("How many agents handle WhatsApp leads?", "INPUT_TEXT", { isRequired: true }),
+    ...question("How many agents handle WhatsApp property leads?", "INPUT_TEXT", { isRequired: true }),
     ...question("Monthly WhatsApp lead volume", "INPUT_TEXT"),
-    ...question("Main lead sources", "TEXTAREA"),
-    ...question("Biggest workflow pain", "TEXTAREA", { isRequired: true }),
+    ...question("Main lead sources (Instagram, portals, referrals, signs, ads)", "TEXTAREA"),
+    ...question("Biggest leak today (missed replies, personal phones, follow-up, pipeline visibility)", "TEXTAREA", { isRequired: true }),
+    ...question("How should we qualify leads? (budget, property type, QID/residency, urgency)", "TEXTAREA"),
     ...question("What should the AI agent do for your team?", "TEXTAREA"),
     ...question("Tools to connect with webhooks", "TEXTAREA"),
-    ...question("Ideal rollout timeline", "INPUT_TEXT"),
+    ...question("Can we start the 48-hour rollout this week?", "INPUT_TEXT"),
     hiddenFields(["sessionId", "source", "pageUrl", "utm_source", "utm_medium", "utm_campaign"])
   ];
 }
 
 function demoLeadFormBlocks() {
   return [
-    formTitle("Save this CRM demo conversation", "Save lead"),
-    text("Send the demo context to Ansury so we can follow up without another AI call. The conversation/session context is passed through hidden fields where available."),
+    formTitle("Save this command-center demo lead", "Save lead"),
+    text("Send the demo context to Ansury so we can prepare your 48-hour setup without another AI call. The conversation/session context is passed through hidden fields where available."),
     ...question("Your name", "INPUT_TEXT", { isRequired: true }),
     ...question("Agency name", "INPUT_TEXT"),
     ...question("Work email", "INPUT_EMAIL", { isRequired: true }),

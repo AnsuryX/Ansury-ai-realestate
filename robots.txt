@@ -13,4 +13,4 @@ Allow: /
 User-agent: PerplexityBot
 Allow: /
 
-Sitemap: https://ansury.ai/sitemap.xml
+Sitemap: https://ansury-ai.vercel.app/sitemap.xml
