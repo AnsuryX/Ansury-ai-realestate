@@ -1,12 +1,12 @@
 {
-  "name": "Ansury AI",
-  "short_name": "Ansury AI",
-  "description": "WhatsApp AI agents for Qatar real estate lead qualification and viewing bookings.",
+  "name": "Ansury Systems",
+  "short_name": "Ansury",
+  "description": "WhatsApp CRM with AI agent, suggested replies, workflows, and webhooks for Qatar real estate agencies.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#0a0a0a",
-  "theme_color": "#0a0a0a",
+  "background_color": "#111827",
+  "theme_color": "#111827",
   "icons": [
     {
       "src": "/favicon.svg",

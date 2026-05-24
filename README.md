@@ -1,4 +1,4 @@
-# Ansury AI (Secure Backend Setup)
+# Ansury Systems (Secure Backend Setup)
 
 This project now runs with a backend API so keys are never exposed in the browser.
 
@@ -14,10 +14,10 @@ This project now runs with a backend API so keys are never exposed in the browse
 - Frontend rewired to call local `/api/*` endpoints only
 - UTF-8-safe frontend text cleanup
 - Conversion upgrades:
-  - Offer-led CTA copy ("Get 3 qualified viewings in 7 days")
-  - Above-fold case metric block
-  - Localized trust signals
-  - 3-step pre-qualifier before booking
+  - Offer-led CTA copy ("Book Your WhatsApp CRM Rollout")
+  - WhatsApp-first real estate CRM positioning
+  - Shared inbox, CRM, pipeline, broadcasts, automations, and AI reply sections
+  - 3-step agency workflow pre-qualifier before booking
   - One-click WhatsApp fallback + callback request form when slots fail
 
 ## 1) Create environment file

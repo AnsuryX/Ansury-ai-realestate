@@ -1,8 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
-  <title id="title">Ansury AI favicon</title>
-  <desc id="desc">Gold Ansury AI monogram on a black background.</desc>
-  <rect width="512" height="512" rx="96" fill="#0a0a0a"/>
-  <circle cx="256" cy="256" r="190" fill="none" stroke="#c9a84c" stroke-width="18"/>
-  <path fill="#c9a84c" d="M256 104 385 408h-52l-29-72h-98l-28 72h-51L256 104Zm31 190-32-82-32 82h64Z"/>
-  <path fill="#f5f0e8" d="M141 408 256 104l22 52-95 252h-42Zm230 0h-42L234 156l22-52 115 304Z" opacity=".72"/>
+  <title id="title">Ansury Systems favicon</title>
+  <desc id="desc">Lagoon blue Ansury Systems monogram on an obsidian background.</desc>
+  <rect width="512" height="512" rx="96" fill="#111827"/>
+  <circle cx="256" cy="256" r="190" fill="none" stroke="#06B6D4" stroke-width="18"/>
+  <path fill="#06B6D4" d="M256 104 385 408h-52l-29-72h-98l-28 72h-51L256 104Zm31 190-32-82-32 82h64Z"/>
+  <path fill="#FFFFFF" d="M141 408 256 104l22 52-95 252h-42Zm230 0h-42L234 156l22-52 115 304Z" opacity=".78"/>
 </svg>

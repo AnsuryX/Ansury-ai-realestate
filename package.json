@@ -1,7 +1,7 @@
 {
   "name": "ansury-ai",
   "version": "1.0.0",
-  "description": "Ansury AI landing page with secure backend APIs",
+  "description": "Ansury Systems landing page with secure backend APIs",
   "main": "server.js",
   "scripts": {
     "build": "node --check server.js",

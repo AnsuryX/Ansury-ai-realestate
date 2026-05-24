@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" role="img" aria-labelledby="title desc">
-  <title id="title">Ansury AI app icon</title>
-  <desc id="desc">Gold Ansury AI monogram for saved browser shortcuts.</desc>
-  <rect width="180" height="180" rx="36" fill="#0a0a0a"/>
-  <circle cx="90" cy="90" r="66" fill="none" stroke="#c9a84c" stroke-width="7"/>
-  <path fill="#c9a84c" d="M90 36 135 144h-18l-10-26H73l-10 26H45L90 36Zm11 67L90 74l-11 29h22Z"/>
+  <title id="title">Ansury Systems app icon</title>
+  <desc id="desc">Lagoon blue Ansury Systems monogram for saved browser shortcuts.</desc>
+  <rect width="180" height="180" rx="36" fill="#111827"/>
+  <circle cx="90" cy="90" r="66" fill="none" stroke="#06B6D4" stroke-width="7"/>
+  <path fill="#06B6D4" d="M90 36 135 144h-18l-10-26H73l-10 26H45L90 36Zm11 67L90 74l-11 29h22Z"/>
 </svg>
